@@ -3,6 +3,7 @@
 
 import sys
 import httplib
+import urllib
 import urllib2
 import cookielib
 import lxml.html
@@ -14,7 +15,9 @@ class check():
         self.url = url
 
     def google(self):
-        request = urllib2.Request((u'http://www.google.com/search?as_q=%s&as_epq=&as_oq=&as_eq=&hl=ru&client=ubuntu&tbo=1&channel=fs&num=100&lr=&cr=&as_ft=i&as_filetype=&as_qdr=all&as_occt=any&as_dt=i&as_sitesearch=&as_rights=&safe=images&btnG=Поиск+в+Google' % self.query).encode('utf8'))
+        """docstring for google"""
+        search = u'http://www.google.com/search?as_q=%s&as_epq=&as_oq=&as_eq=&hl=ru&client=ubuntu&tbo=1&channel=fs&num=100&lr=&cr=&as_ft=i&as_filetype=&as_qdr=all&as_occt=any&as_dt=i&as_sitesearch=&as_rights=&safe=images&btnG=Поиск+в+Google'
+        request = urllib2.Request((search % self.query).encode('utf-8'))
         #Create a CookieJar object to hold the cookies
         cj = cookielib.CookieJar()
         #Create an opener to open pages using the http protocol and to process cookies.
@@ -23,11 +26,12 @@ class check():
         doc = lxml.html.document_fromstring(opener.open(request).read())
         for i, result in enumerate(doc.cssselect('h3 a')):
             if self.url in result.get('href'):
-                print 'Google - ', i
+                print 'Google - ', i + 1
 
     def yandex(self):
         """docstring for yandex"""
-        request = urllib2.Request((u'http://yandex.ru/yandsearch?text=%s&numdoc=50&lr=66' % self.query).encode('utf8'))
+        search = u'http://yandex.ru/yandsearch?text=%s&numdoc=50&lr=66'
+        request = urllib2.Request((search % self.query).encode('utf-8'))
         #Create a CookieJar object to hold the cookies
         cj = cookielib.CookieJar()
         #Create an opener to open pages using the http protocol and to process cookies.
@@ -36,10 +40,16 @@ class check():
         doc = lxml.html.document_fromstring(opener.open(request).read())
         for i, result in enumerate(doc.cssselect('h2 a')):
             if self.url in result.get('href'):
-                print 'Yandex - ', i
+                print 'Yandex - ', i + 1
 
 
 if __name__ == "__main__":
-    seo_position = check(query=sys.argv[1], url=sys.argv[2])
+    try:
+        query = unicode(urllib.quote(sys.argv[1]), 'utf-8')
+        url = unicode(sys.argv[2], 'utf-8')
+    except:
+        print "usage: ./seo-position.py 'search text' mywebsite.com"
+        sys.exit(0)
+    seo_position = check(query, url)
     seo_position.google()
     seo_position.yandex()
